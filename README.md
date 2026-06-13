@@ -1,170 +1,281 @@
 # 🏥 Medical RAG Chatbot: Retrieval-Augmented Generation System
 
-[![Python Version](https://img.shields.io/badge/Python-3.10+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Python Version](https://img.shields.io/badge/Python-3.10+-blue.svg?style=for-the-badge\&logo=python\&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg?style=for-the-badge\&logo=flask\&logoColor=white)](https://flask.palletsprojects.com/)
 [![LangChain](https://img.shields.io/badge/LangChain-0.3-red.svg?style=for-the-badge)](https://www.langchain.com/)
-[![Groq API](https://img.shields.io/badge/Groq-Llama_3.3-orange.svg?style=for-the-badge)](https://console.groq.com/)
-[![Vector Store](https://img.shields.io/badge/FAISS-CPU-lightgrey.svg?style=for-the-badge)](https://github.com/facebookresearch/faiss)
+[![Groq](https://img.shields.io/badge/Groq-Llama_3.3-orange.svg?style=for-the-badge)](https://console.groq.com/)
+[![FAISS](https://img.shields.io/badge/FAISS-Vector_Store-lightgrey.svg?style=for-the-badge)](https://github.com/facebookresearch/faiss)
 
-An advanced, production-grade **Retrieval-Augmented Generation (RAG) chatbot** designed to ingest complex medical reference documents and deliver highly accurate, context-aware answers.
+An advanced **Retrieval-Augmented Generation (RAG) Chatbot** designed to answer medical questions using information retrieved from custom medical reference documents.
 
-This application uses a local **FAISS** index with **HuggingFace text embeddings** to retrieve relevant clinical text blocks and constructs custom prompts executed on the cloud-hosted **Llama-3.3-70b-versatile** model via **Groq** for rapid, precise inference.
+The system combines **HuggingFace Embeddings**, **FAISS Vector Search**, **LangChain RetrievalQA**, and **Groq's Llama-3.3-70B model** to provide accurate, context-aware responses from uploaded medical literature.
+
+---
+
+## ✨ Key Features
+
+* 📚 Medical PDF Knowledge Base
+* 🔍 Semantic Search using FAISS
+* 🤖 Llama-3.3-70B via Groq API
+* 🧠 HuggingFace Embeddings
+* ⚡ Fast Retrieval-Augmented Generation
+* 🌐 Flask-Based Web Interface
+* 🏗️ Modular Production-Ready Architecture
+* 📝 Structured Logging & Exception Handling
 
 ---
 
 ## 📐 System Architecture
 
-The workflow below illustrates how documents are loaded, vectorized, indexed, and retrieved to answer user queries:
-
 ```mermaid
 graph TD
-    %% Styling
-    classDef storage fill:#2b2b2b,stroke:#ffa500,stroke-width:2px,color:#fff;
-    classDef process fill:#1f3c4d,stroke:#00ffcc,stroke-width:1.5px,color:#fff;
-    classDef external fill:#4a154b,stroke:#e01e5a,stroke-width:1.5px,color:#fff;
 
-    %% Ingestion Flow
-    subgraph Ingestion_Pipeline ["Ingestion Pipeline (Offline)"]
-        A["Medical PDFs (data/)"] -->|PyPDF DirectoryLoader| B("Text Ingestion & Parsing")
-        B -->|RecursiveCharacterTextSplitter| C("Text Chunking (size: 500, overlap: 50)")
-        C -->|sentence-transformers/all-MiniLM-L6-v2| D("Generate Semantic Embeddings")
-        D -->|Save Locally| E[("FAISS Vector Index (vectorstore/)")]:::storage
-    end
+    A["Medical PDFs"] --> B["Document Loading"]
+    B --> C["Text Chunking"]
+    C --> D["Generate Embeddings"]
+    D --> E["FAISS Vector Store"]
 
-    %% Query / Generation Flow
-    subgraph Query_Runtime ["Query Runtime (Online)"]
-        F["User Prompt (Flask UI)"] -->|Form Submission| G("Retrieval-QA Chain")
-        E -.->|Similarity Search (k=1)| H("Context Retrieval")
-        G -->|Fetch Local Context| H
-        H -->|Context + Question| I("Custom Prompt Construction")
-        I -->|Inference Payload| J("ChatGroq (Llama-3.3-70b)"):::external
-        J -->|JSON Response| K("Response Formatting (Flask UI)")
-    end
-
-    class B,C,D,G,H,I,K process;
+    F["User Query"] --> G["Retrieval QA Chain"]
+    E --> H["Context Retrieval"]
+    G --> H
+    H --> I["Prompt Construction"]
+    I --> J["Groq Llama 3.3 70B"]
+    J --> K["Response Generation"]
 ```
 
 ---
 
-## 🛠️ Tech Stack & Engineering Specs
+## 🛠️ Tech Stack
 
-- **Backend Framework:** Flask (Python) with Flask-session caching for conversational persistence.
-- **RAG Orchestrator:** LangChain (`RetrievalQA` pipeline & `PromptTemplate`).
-- **Embedding Model:** `sentence-transformers/all-MiniLM-L6-v2` via HuggingFace (converts chunks to 384-dimensional dense vectors).
-- **Vector Database:** Facebook AI Similarity Search (FAISS) local CPU index.
-- **Inference LLM:** Groq Chat SDK (`llama-3.3-70b-versatile`) for sub-second, context-based response generation.
-- **Robust Exception Handling:** Standardized error wrapping via `CustomException` that intercepts stack traces and exposes file names/line numbers for debugging.
-- **Logging Infrastructure:** Daily rotating logs written under `logs/` directory using Python's standard `logging`.
+| Component       | Technology              |
+| --------------- | ----------------------- |
+| Backend         | Flask                   |
+| LLM             | Llama-3.3-70B-Versatile |
+| LLM Provider    | Groq                    |
+| Framework       | LangChain               |
+| Embeddings      | all-MiniLM-L6-v2        |
+| Vector Database | FAISS                   |
+| Language        | Python                  |
+| Frontend        | HTML, CSS, JavaScript   |
+| Environment     | dotenv                  |
 
 ---
 
-## 📁 Project Directory Structure
+## 📁 Project Structure
 
 ```text
-Medical Project/
+Medical-RAG-Chatbot/
 │
 ├── app/
-│   ├── common/                  # Shared utilities
-│   │   ├── custom_exception.py  # Structured trace logging
-│   │   └── logger.py            # Daily-rotating logs configuration
+│   ├── common/
+│   │   ├── custom_exception.py
+│   │   └── logger.py
 │   │
-│   ├── components/              # Modular component layers
-│   │   ├── data_loader.py       # Initiates vector DB build
-│   │   ├── embedding.py         # Loads HuggingFace model
-│   │   ├── llm.py               # Configures Groq Chat SDK
-│   │   ├── load_pdf.py          # Handles parsing & text-splitting
-│   │   ├── retriever.py         # Configures PromptTemplate & RetrievalQA
-│   │   └── vector_store.py      # Handles FAISS save/load
+│   ├── components/
+│   │   ├── data_loader.py
+│   │   ├── embedding.py
+│   │   ├── llm.py
+│   │   ├── load_pdf.py
+│   │   ├── retriever.py
+│   │   └── vector_store.py
 │   │
-│   ├── config/                  # Configuration & Environment bindings
+│   ├── config/
 │   │   └── config.py
 │   │
-│   ├── templates/               # Flask UI
-│   │   └── index.html           # Dynamic chat UI
+│   ├── templates/
+│   │   └── index.html
 │   │
-│   └── application.py           # Application entry-point (Flask server)
+│   └── application.py
 │
-├── data/                        # Raw Medical PDFs (Git-Ignored)
-├── logs/                        # System Logs (Git-Ignored)
-├── vectorstore/                 # Compiled FAISS Databases (Git-Ignored)
+├── medical/
+│   └── ui-demo.png
 │
-├── .env.example                 # Credentials template
-├── .gitignore                   # Standard repo file-exclusions
-├── req.txt                      # Dependencies specification
-├── setup.py                     # Setup wrapper script
-└── README.md                    # This document
+├── data/
+├── logs/
+├── vectorstore/
+│
+├── .env.example
+├── .gitignore
+├── req.txt
+├── setup.py
+└── README.md
 ```
 
 ---
 
-## 🚀 Installation & Local Setup
+## 🚀 Installation
 
-To set up and run this application locally, follow these steps:
+### 1. Clone Repository
 
-### 1. Clone & Set Up the Repository
 ```bash
-git clone https://github.com/your-username/medical-rag-chatbot.git
-cd medical-rag-chatbot
+git clone https://github.com/your-username/Medical-RAG-Chatbot.git
+
+cd Medical-RAG-Chatbot
 ```
 
-### 2. Configure Virtual Environment
-Create and activate a virtual environment to manage dependencies securely:
+### 2. Create Virtual Environment
+
 ```bash
-# Create environment
 python -m venv venv
+```
 
-# Activate on Windows:
+### Activate Environment
+
+**Windows**
+
+```bash
 venv\Scripts\activate
+```
 
-# Activate on macOS/Linux:
+**Linux / macOS**
+
+```bash
 source venv/bin/activate
 ```
 
-### 3. Install Required Packages
+---
+
+### 3. Install Dependencies
+
 ```bash
 pip install -r req.txt
 ```
-*(Optional: Install the package in editable mode to bind the root directory)*
+
+Optional:
+
 ```bash
 pip install -e .
 ```
 
-### 4. Setup Secrets Configuration
-1. Copy the environment template:
-   ```bash
-   cp .env.example .env
-   ```
-2. Open the newly created `.env` file and input your Groq API Key:
-   ```env
-   GROQ_API_KEY=gsk_your_actual_key_here
-   ```
-   *(Get your free API Key from the [Groq Console](https://console.groq.com/))*
+---
 
-### 5. Index the Source Knowledge (First Time Only)
-1. Create a `data/` folder in the root directory.
-2. Put any reference PDFs inside the `data/` directory (e.g., medical books, journal articles, or clinical guidelines).
-3. Execute the processing pipeline to parse, chunk, and index the text:
-   ```bash
-   python app/components/data_loader.py
-   ```
-   This will construct a local FAISS index inside the `vectorstore/` folder.
+### 4. Configure Environment Variables
 
-### 6. Run the Chatbot
-Start the Flask development server:
-```bash
-python app/application.py
+Create a `.env` file:
+
+```env
+GROQ_API_KEY=your_groq_api_key
 ```
-Open your web browser and go to: **`http://localhost:5000`**
+
+Get your API key from:
+
+https://console.groq.com
 
 ---
 
-## 💡 Engineering Highlights for Recruiters
+### 5. Build Vector Database
 
-* **Decoupled Architecture:** Follows a strict separations-of-concern pattern. The data loaders, embeddings, vector indexing, inference LLM, and presentation layer (Flask UI) are independent python modules.
-* **Safe Credential Handling:** API keys are never hardcoded and are loaded strictly from system environment/dotenv files.
-* **Smart Text Chunking:** Employs a recursive character text splitter with chunk size of 500 characters and an overlap of 50 characters, ensuring semantic consistency across chunks.
-* **Robust Error Interceptor:** Uses a custom exception handling pattern (`CustomException`) that identifies the exact filename and line number where an exception occurred, logged directly into daily rotating logs under `logs/`.
-* **Resource Optimization:** Utilizes `FAISS.load_local` with `allow_dangerous_deserialization=True` to retrieve context vectors quickly in-memory without incurring expensive API fees or slow DB calls.
+Place your medical PDFs inside:
+
+```text
+data/
+```
+
+Then run:
+
+```bash
+python app/components/data_loader.py
+```
+
+This creates the FAISS vector index inside:
+
+```text
+vectorstore/
+```
+
+---
+
+### 6. Run Application
+
+```bash
+python app/application.py
+```
+
+Open:
+
+```text
+http://localhost:5000
+```
+
+---
+
+## 💡 Engineering Highlights
+
+### Decoupled Architecture
+
+The application follows a modular design where:
+
+* Document loading
+* Embedding generation
+* Vector indexing
+* Retrieval logic
+* LLM inference
+* User interface
+
+are implemented independently.
+
+### Efficient Semantic Retrieval
+
+Uses:
+
+```text
+sentence-transformers/all-MiniLM-L6-v2
+```
+
+to generate dense vector embeddings for semantic similarity search.
+
+### Fast Context Search
+
+FAISS enables high-performance nearest-neighbor retrieval without requiring cloud vector databases.
+
+### Secure Credential Management
+
+API keys are stored in environment variables and never hardcoded.
+
+### Robust Error Handling
+
+Custom exception handlers provide:
+
+* File names
+* Line numbers
+* Stack traces
+
+for easier debugging.
+
+---
 
 ## 📱 User Interface Preview
-![Chatbot UI Demo](medical\ui-demo.png)
+
+![Chatbot UI Demo](medical/ui-demo.png)
+
+---
+
+## 🔮 Future Improvements
+
+* Multi-document retrieval
+* Chat history memory
+* PDF upload from UI
+* Medical citation generation
+* Source highlighting
+* Docker deployment
+* Cloud deployment on AWS / Azure
+
+---
+
+## 👨‍💻 Author
+
+**Dibyajyoti Mahapatra(KingLiku)**
+
+Computer Science Engineering Student
+
+Passionate about:
+
+* Artificial Intelligence
+* Machine Learning
+* Retrieval-Augmented Generation (RAG)
+* Backend Development
+* NLP Systems
+
+---
+
+⭐ If you found this project useful, consider giving it a star.
