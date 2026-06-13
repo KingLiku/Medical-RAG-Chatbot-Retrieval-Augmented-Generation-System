@@ -1,0 +1,36 @@
+# User-specific configuration
+.env
+
+# Virtual Environment directories
+packages/
+venv/
+.venv/
+env/
+ENV/
+bin/
+lib/
+include/
+
+# Application local storage & databases (binary files)
+vectorstore/
+data/
+
+# Application execution logs
+logs/
+*.log
+
+# Python cache & build directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+*.egg-info/
+
+# IDE settings
+.vscode/
+.idea/
+.project
+.pydevproject
+.settings/
